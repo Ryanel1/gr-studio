@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .export_destination import ExportFolderDialog, resolve_destination
 from .batch import process_photos
 from .frame_panel import FramePanel
 from .frames import FRAME_FIELDS
@@ -839,11 +840,9 @@ class Studio(QMainWindow):
             or self.view.guiding
         ):
             return
-        folder = QFileDialog.getExistingDirectory(
-            self, "Choose export folder", self.library.export_folder
-        )
-        if folder:
-            self.export_to(folder)
+        dialog = ExportFolderDialog(self.library.export_folder, self)
+        if dialog.exec():
+            self.export_to(dialog.destination())
 
     def export_to(self, folder):
         if (
@@ -867,12 +866,22 @@ class Studio(QMainWindow):
                 self.reveal.show()
             self.batch_message(f"Exported to {folder}", results, errors, stopped)
 
-        self.run_batch(
-            "Exporting",
-            items,
-            lambda path, settings: export_image(path, settings, folder),
-            result,
-        )
+        resolved = None
+        connection_error = None
+
+        def export_one(path, settings):
+            nonlocal resolved, connection_error
+            if connection_error is not None:
+                raise connection_error
+            if resolved is None:
+                try:
+                    resolved = resolve_destination(folder)
+                except Exception as exc:
+                    connection_error = exc
+                    raise
+            return export_image(path, settings, resolved)
+
+        self.run_batch("Exporting", items, export_one, result)
 
     def reveal_export(self):
         if self.last_export:

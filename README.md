@@ -23,6 +23,8 @@ Select multiple photos with Ctrl-click (Command-click on Mac), Shift-click for a
 
 Edits persist automatically outside the originals, including each photo’s curve and all mixer bands. Older sessions open with neutral defaults for the added controls. Reset photo returns the previewed photo to the source. Removing from the session only removes the workspace entry. Camera operations in the shipped importer are read-only.
 
+On KDE Linux, the export picker includes your saved network places (including **NAS**). Click **NAS**, open a share, and choose an export folder. GR Studio uses the installed KIO Fuse service and desktop authentication, remembers the network URL, and reconnects on the next export. If connection fails, open the NAS in Dolphin and sign in before retrying. On macOS, mount the NAS in Finder and choose its folder under `/Volumes`. No network credentials are stored by GR Studio.
+
 Shortcuts: Ctrl+O opens local photos; Ctrl+I opens USB import; Ctrl+E exports.
 
 ## Tuning controls
