@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-23T16:55:03.241289+00:00",
+  "title": "Design System: GR Studio",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas"
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel"
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Input"
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Divider"
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Control border"
+      },
+      "text": {
+        "role": "primary",
+        "displayName": "Text"
+      },
+      "secondary-text": {
+        "role": "neutral",
+        "displayName": "Secondary text"
+      },
+      "primary-hover": {
+        "role": "neutral",
+        "displayName": "Primary hover"
+      },
+      "selection": {
+        "role": "neutral",
+        "displayName": "Selection"
+      },
+      "selection-highlight": {
+        "role": "neutral",
+        "displayName": "Selection highlight"
+      },
+      "button": {
+        "role": "neutral",
+        "displayName": "Button"
+      },
+      "button-hover": {
+        "role": "neutral",
+        "displayName": "Button hover"
+      },
+      "hover-border": {
+        "role": "neutral",
+        "displayName": "Hover border"
+      },
+      "disabled": {
+        "role": "neutral",
+        "displayName": "Disabled"
+      },
+      "disabled-text": {
+        "role": "neutral",
+        "displayName": "Disabled text"
+      },
+      "disabled-border": {
+        "role": "neutral",
+        "displayName": "Disabled border"
+      },
+      "primary-disabled-text": {
+        "role": "neutral",
+        "displayName": "Primary disabled text"
+      },
+      "section-hover": {
+        "role": "neutral",
+        "displayName": "Section hover"
+      },
+      "alternate-row": {
+        "role": "neutral",
+        "displayName": "Alternate row"
+      },
+      "scrollbar": {
+        "role": "neutral",
+        "displayName": "Scrollbar"
+      },
+      "histogram": {
+        "role": "neutral",
+        "displayName": "Histogram"
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White"
+      },
+      "paper-warm": {
+        "role": "neutral",
+        "displayName": "Paper warm"
+      },
+      "paper-vintage": {
+        "role": "neutral",
+        "displayName": "Paper vintage"
+      },
+      "paper-black": {
+        "role": "neutral",
+        "displayName": "Paper black"
+      }
+    },
+    "typographyMeta": {
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "Native Qt system sans-serif brand role."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Native Qt system sans-serif title role."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Native Qt system sans-serif section role."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Native Qt system sans-serif body role."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [],
+    "nativeQt": {
+      "platform": "native desktop",
+      "toolkit": "PySide6 Qt Widgets",
+      "widgetStyle": "Fusion",
+      "fontFamily": "sans-serif (desktop-resolved)",
+      "baseFontPointSize": 10,
+      "units": "logical desktop pixels except explicit font point sizes",
+      "sourceFiles": [
+        "gr_studio/theme.py",
+        "gr_studio/widgets.py",
+        "gr_studio/window.py",
+        "gr_studio/tuning_panel.py",
+        "gr_studio/tuning.py",
+        "gr_studio/frame_panel.py",
+        "gr_studio/geometry_panel.py",
+        "gr_studio/import_dialog.py"
+      ],
+      "geometry": {
+        "initialWindow": [
+          1280,
+          850
+        ],
+        "minimumWindow": [
+          940,
+          680
+        ],
+        "inspectorWidth": {
+          "minimum": 360,
+          "initial": 400,
+          "maximum": 460
+        },
+        "inspectorPadding": 24,
+        "filmstripHeight": 148,
+        "filmstripGrid": [
+          140,
+          114
+        ],
+        "thumbnailBounds": [
+          110,
+          76
+        ],
+        "previewInset": [
+          26,
+          24,
+          26,
+          24
+        ],
+        "numericFieldWidth": 64,
+        "histogramHeight": 64,
+        "usbDialog": {
+          "initialWindow": [
+            1040,
+            760
+          ],
+          "minimumWindow": [
+            780,
+            580
+          ],
+          "rowHeight": 144,
+          "thumbnailBounds": [
+            160,
+            120
+          ]
+        },
+        "curvePreviewHeight": 150
+      },
+      "sectionDefaults": {
+        "Light": true,
+        "Color": false,
+        "Effects": false,
+        "Detail": false,
+        "Curve": false,
+        "Mixer": false,
+        "Layout": true,
+        "Paper": false,
+        "Upright": true,
+        "Manual adjustments": false
+      },
+      "states": {
+        "fieldFocus": {
+          "borderWidth": 1,
+          "borderColorRef": "colors.text"
+        },
+        "filmstripSelected": {
+          "backgroundRef": "colors.selection",
+          "borderWidth": 1,
+          "borderColorRef": "colors.text"
+        },
+        "tabSelected": {
+          "textColorRef": "colors.primary-hover",
+          "bottomBorderWidth": 2,
+          "bottomBorderColorRef": "colors.text"
+        },
+        "guide": {
+          "strokeColorRef": "colors.white",
+          "strokeWidth": 2,
+          "haloColorRef": "colors.canvas",
+          "haloWidth": 5,
+          "vertical": "solid",
+          "horizontal": "dashed"
+        },
+        "uncheckedCheckbox": {
+          "size": [
+            16,
+            16
+          ],
+          "backgroundRef": "colors.input",
+          "borderColorRef": "colors.histogram",
+          "borderWidth": 1,
+          "radius": 2
+        }
+      },
+      "histogram": "Source luminance only; sampled from the loaded source, not the edited result.",
+      "validationScope": "Linux native implementation; macOS not visually validated.",
+      "snippetPolicy": "No HTML/CSS replicas: native Qt components are described and linked to source. Native desktop is recorded here because the panel platform schema does not represent it.",
+      "adjust": {
+        "sectionOrder": [
+          "Light",
+          "Color",
+          "Effects",
+          "Detail",
+          "Curve",
+          "Mixer"
+        ],
+        "controls": {
+          "Light": [
+            "Exposure",
+            "Contrast",
+            "Highlights",
+            "Shadows",
+            "Whites",
+            "Blacks"
+          ],
+          "Color": [
+            "Warmth",
+            "Tint",
+            "Vibrance",
+            "Saturation"
+          ],
+          "Effects": [
+            "Texture",
+            "Clarity",
+            "Dehaze",
+            "Grain",
+            "Vignette"
+          ],
+          "Detail": [
+            "Sharpening",
+            "Noise reduction"
+          ]
+        },
+        "curvePresets": [
+          "Linear",
+          "Soft contrast",
+          "Faded shadows",
+          "Strong contrast"
+        ],
+        "mixerBands": [
+          "Red",
+          "Orange",
+          "Yellow",
+          "Green",
+          "Aqua",
+          "Blue",
+          "Purple",
+          "Magenta"
+        ],
+        "mixerControls": [
+          "Hue",
+          "Saturation",
+          "Luminance"
+        ],
+        "persistence": "Independent per-photo and per-band settings; old sessions use neutral defaults.",
+        "autoAdjust": "Updates Exposure, Contrast, Highlights, Shadows, Saturation, and Warmth; preserves other tuning.",
+        "rendering": "Lightweight photographic approximations shared by preview and export; float work uses strips, spatial filters also use full-size byte images. No added dependencies or Adobe RAW processing. Per-pixel grain and noise reduction differ with preview downsampling; inspect export at 100%.",
+        "vignette": "Negative values darken corners; positive values lighten corners."
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "description": "Native local and USB import buttons.",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "description": "Silver native action for export, auto adjustment, Upright, and import.",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Quiet button",
+      "kind": "button",
+      "description": "Restrained compare, reset, and session actions.",
+      "refersTo": "button-quiet"
+    },
+    {
+      "name": "Adjustment field",
+      "kind": "input",
+      "description": "64px native numeric spinbox above a slider; quiet at rest.",
+      "refersTo": "field"
+    },
+    {
+      "name": "Inspector tabs",
+      "kind": "nav",
+      "description": "Adjust, Frame, and Straighten with silver active underline.",
+      "refersTo": "inspector-tab"
+    },
+    {
+      "name": "Collapsible section",
+      "kind": "custom",
+      "description": "Native checkable QToolButton and arrow control a content section.",
+      "refersTo": "section-toggle"
+    },
+    {
+      "name": "Filmstrip",
+      "kind": "custom",
+      "description": "Horizontal extended-selection QListWidget with thumbnails and filenames.",
+      "refersTo": "filmstrip-item"
+    },
+    {
+      "name": "Native menus",
+      "kind": "nav",
+      "description": "File, Edit, and View QMenus opened by toolbar QToolButtons."
+    },
+    {
+      "name": "USB photo table",
+      "kind": "custom",
+      "description": "Checkable native table with large thumbnails and a destination row."
+    },
+    {
+      "name": "Source histogram",
+      "kind": "custom",
+      "description": "64px-high monochrome source luminance histogram."
+    },
+    {
+      "name": "Tone curve",
+      "kind": "custom",
+      "description": "Native preset selector above a 150px read-only monochrome graph evaluating the renderer’s curve function."
+    },
+    {
+      "name": "Color mixer",
+      "kind": "custom",
+      "description": "Native eight-band selector with Hue, Saturation, and Luminance controls; switching bands preserves each band’s values."
+    }
+  ],
+  "narrative": {
+    "northStar": "Archive",
+    "overview": "Archive is the user-approved production direction: a monochrome native photo workspace matched to Chrome City Linux. Dark gray panels, a darker canvas, silver text, and restrained native controls keep the photograph dominant. The implementation uses PySide6 Qt Widgets with Fusion styling and the system sans-serif family.\n\nThis record describes the implemented desktop interface, including its working menus and editing controls. Source authority is `gr_studio/theme.py`, `widgets.py`, `window.py`, `tuning_panel.py`, `tuning.py`, `frame_panel.py`, `geometry_panel.py`, and `import_dialog.py`. macOS has not been visually validated.",
+    "keyCharacteristics": [
+      "Large aspect-correct photo preview",
+      "Monochrome action, selection, and focus treatments",
+      "Collapsible native inspector sections",
+      "Persistent export footer",
+      "Horizontal session filmstrip",
+      "Native USB import table with checkboxes"
+    ],
+    "rules": [
+      {
+        "name": "Monochrome Interface",
+        "body": "Keep interface actions, selection, focus, and geometry guides neutral; image content and paper treatments may carry color.",
+        "section": "colors"
+      },
+      {
+        "name": "Persistent Export",
+        "body": "Keep the export action outside the inspector scroll area.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the large, aspect-correct preview and persistent export action.",
+      "**Do** use existing native controls, visible focus, and disabled states.",
+      "**Do** keep section defaults and conditional control visibility aligned with the implementation.",
+      "**Do** keep paper colors within the frame treatment.",
+      "**Do** describe the histogram as source luminance."
+    ],
+    "donts": [
+      "**Don't** add unsupported mock controls, dependencies, or web/mobile breakpoints.",
+      "**Don't** introduce colored interface accents, heavy shadows, or decorative animation.",
+      "**Don't** add static helper subtext where tooltips or operational status already provide guidance.",
+      "**Don't** claim macOS visual validation without inspecting it there."
+    ]
+  }
+}
