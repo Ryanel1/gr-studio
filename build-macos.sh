@@ -9,15 +9,14 @@ fi
 .venv/bin/python -m pip install -q pyinstaller
 mkdir -p work
 
-# Render icon.svg onto a dark rounded square and pack it as an .icns.
+# Draw the macOS camera emoji on a dark rounded square and pack it as an .icns.
 QT_QPA_PLATFORM=offscreen .venv/bin/python - <<'PY'
 import shutil
 import subprocess
 from pathlib import Path
 
 from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QColor, QGuiApplication, QImage, QPainter, QPainterPath
-from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtGui import QColor, QFont, QGuiApplication, QImage, QPainter, QPainterPath
 
 app = QGuiApplication([])
 size = 1024
@@ -29,8 +28,10 @@ inset = 100  # macOS icons leave a margin around the rounded square
 path = QPainterPath()
 path.addRoundedRect(QRectF(inset, inset, size - 2 * inset, size - 2 * inset), 185, 185)
 painter.fillPath(path, QColor("#1e1e20"))
-margin = inset + 110
-QSvgRenderer("icon.svg").render(painter, QRectF(margin, margin, size - 2 * margin, size - 2 * margin))
+font = QFont("Apple Color Emoji")  # the Mac's own camera emoji, no custom artwork
+font.setPixelSize(560)
+painter.setFont(font)
+painter.drawText(QRectF(0, 0, size, size), Qt.AlignmentFlag.AlignCenter, "\U0001F4F7")
 painter.end()
 iconset = Path("work/GR-Studio.iconset")
 shutil.rmtree(iconset, ignore_errors=True)
