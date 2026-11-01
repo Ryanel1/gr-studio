@@ -74,7 +74,12 @@ def _run(name: str, *args: str, timeout: int = 120) -> str:
     lower = output.lower()
     if any(
         text in lower
-        for text in ("no raw devices found", "no devices found", "no mtp devices")
+        for text in (
+            "no raw devices found",
+            "no devices found",
+            "no devices have been found",
+            "no mtp devices",
+        )
     ):
         raise CameraError(
             "No camera found. Connect the GR IV with a USB data cable and try again."
@@ -267,10 +272,21 @@ def _check_device() -> None:
         raise CameraError(
             "Could not identify the camera. Reconnect USB-C and try again."
         ) from exc
+    if result.returncode == 2:
+        raise CameraError(
+            "No camera found. Connect the GR IV with a USB data cable and try again."
+        )
     if result.returncode:
         raise CameraError(
             "Connect one RICOH GR IV and disconnect other MTP devices, then try again."
         )
+
+
+def _libc():
+    """The process's own C library (for free()); dlopen(NULL) on Linux and macOS."""
+    import ctypes
+
+    return ctypes.CDLL(None)
 
 
 def _native_library():
@@ -295,7 +311,6 @@ def _native_library():
 
 def _single_ricoh(lib, *, open_device=False):
     import ctypes as c
-    import ctypes.util
 
     class Entry(c.Structure):
         _fields_ = [
@@ -317,6 +332,8 @@ def _single_ricoh(lib, *, open_device=False):
     raw, count = c.POINTER(Raw)(), c.c_int()
     code = lib.LIBMTP_Detect_Raw_Devices(c.byref(raw), c.byref(count))
     try:
+        # 5 is LIBMTP_ERROR_NO_DEVICE_ATTACHED.
+        nothing_attached = code == 5 or (code == 0 and count.value == 0)
         matches = (
             code == 0
             and count.value == 1
@@ -325,7 +342,10 @@ def _single_ricoh(lib, *, open_device=False):
             and raw[0].entry.product_id == 0x2123
         )
         if not matches:
-            return None if open_device else False
+            if open_device:
+                return None
+            # None: no MTP device at all; False: devices present, but not one GR IV.
+            return None if nothing_attached else False
         if not open_device:
             return True
         # Opening a cached device enumerates every camera object. For a known
@@ -336,7 +356,7 @@ def _single_ricoh(lib, *, open_device=False):
 
     finally:
         if raw:
-            libc = c.CDLL(ctypes.util.find_library("c") or None)
+            libc = _libc()
             libc.free.argtypes = [c.c_void_p]
             libc.free.restype = None
             libc.free(raw)
@@ -357,7 +377,7 @@ def _read_thumbnail_native(identifier: int, destination: Path) -> int:
         ctypes.POINTER(ctypes.c_uint),
     ]
     lib.LIBMTP_Get_Thumbnail.restype = ctypes.c_int
-    libc = ctypes.CDLL(ctypes.util.find_library("c") or None)
+    libc = _libc()
     libc.free.argtypes = [ctypes.c_void_p]
     libc.free.restype = None
     device = _single_ricoh(lib, open_device=True)
@@ -381,7 +401,9 @@ def _read_thumbnail_native(identifier: int, destination: Path) -> int:
 
 def helper_main():
     if len(sys.argv) == 2 and sys.argv[1] == "--check-device":
-        raise SystemExit(0 if _single_ricoh(_native_library()) else 1)
+        found = _single_ricoh(_native_library())
+        # 0: one GR IV; 2: nothing attached; 1: other or several MTP devices.
+        raise SystemExit(0 if found else 2 if found is None else 1)
     if len(sys.argv) == 4 and sys.argv[1] == "--read-thumbnail":
         raise SystemExit(_read_thumbnail_native(int(sys.argv[2]), Path(sys.argv[3])))
     raise SystemExit("This module is used by GR Studio.")

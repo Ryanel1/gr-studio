@@ -78,10 +78,19 @@ QToolTip { background: #262628; color: #dadadc; border: 1px solid #6e6e70; paddi
 
 def apply_theme(app):
     """Style native controls too, without changing the user's desktop settings."""
-    from PySide6.QtGui import QColor, QFont, QPalette
+    import sys
+
+    from PySide6.QtGui import QColor, QFont, QFontDatabase, QPalette
 
     app.setStyle("Fusion")
-    app.setFont(QFont("sans-serif", 10))
+    if sys.platform == "darwin":
+        # macOS has no "sans-serif" alias; asking for one makes Qt scan every
+        # font family at startup. Use the system UI font (San Francisco).
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
+        font.setPointSize(10)
+    else:
+        font = QFont("sans-serif", 10)
+    app.setFont(font)
     palette = QPalette()
     for role, color in {
         QPalette.ColorRole.Window: PANEL,

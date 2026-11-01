@@ -11,7 +11,7 @@ A Ricoh GR IV owner imports photos by USB-C, makes light edits, straightens hori
 Implementation choice: Python with Qt Widgets (PySide6 Essentials), Pillow, NumPy with a bounded horizon detector, and libmtp command-line tools for USB. No embedded browser or service. Mac USB requires validation with actual hardware; Linux libmtp detection, listing and one original download have been verified.
 
 ## Constraints
-Original files preserved. Full-resolution export; bounded previews. Local processing. JPEG editing first; DNG import supported, RAW development is outside this first version. macOS source compatibility is intended, not yet verified. GR Studio is a working name chosen for this prototype.
+Original files preserved. Full-resolution export; bounded previews. Local processing. JPEG editing first; DNG import supported, RAW development is outside this first version. macOS runs from source and builds as an app (1 November 2026); macOS USB import still needs validation with the camera attached. GR Studio is a working name chosen for this prototype.
 
 ## Evidence
 A real GR IV exposed both SD and internal memory, listed 170 files from SD, and successfully downloaded a 6192x4128 JPEG. Internal memory had no files in that listing. The test photo is /home/deepx/Projects/GR Studio/outputs/usb-import-test/R0000001.JPG.

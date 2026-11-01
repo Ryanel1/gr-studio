@@ -46,6 +46,11 @@ from .widgets import Histogram, PhotoView, pil_image
 from .workers import Job
 
 
+def _keys(sequence):
+    """Shortcut text in the platform's own notation (⌘O on macOS, Ctrl+O elsewhere)."""
+    return QKeySequence(sequence).toString(QKeySequence.SequenceFormat.NativeText)
+
+
 class Studio(QMainWindow):
     def __init__(self, data_folder=None):
         super().__init__()
@@ -126,11 +131,11 @@ class Studio(QMainWindow):
         toolbar.addStretch()
         self.open_button = QPushButton("Open photos")
         self.open_button.clicked.connect(self.open_files)
-        self.open_button.setToolTip("Open local JPEG, PNG or TIFF photos (Ctrl+O)")
+        self.open_button.setToolTip(f"Open local JPEG, PNG or TIFF photos ({_keys('Ctrl+O')})")
         toolbar.addWidget(self.open_button)
         self.usb_button = QPushButton("Import from USB")
         self.usb_button.clicked.connect(self.open_camera)
-        self.usb_button.setToolTip("Browse the connected GR IV (Ctrl+I)")
+        self.usb_button.setToolTip(f"Browse the connected GR IV ({_keys('Ctrl+I')})")
         toolbar.addWidget(self.usb_button)
         layout.addWidget(toolbar_widget)
         split = QSplitter(Qt.Orientation.Horizontal)

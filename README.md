@@ -6,6 +6,12 @@ A small native desktop photo finisher for Ricoh GR IV. Runs locally with Qt Widg
 
 The app is already configured. Run `./run.sh` in this folder. A separate Linux executable is in `dist/GR-Studio/GR-Studio`. Keep its `_internal` folder beside it.
 
+## Launch on the Mac
+
+Run `./run.sh` in this folder. The first run creates `.venv` from Homebrew's Python 3.14 (macOS's own Python 3.9 is too old for the pinned packages) and installs the dependencies. USB import additionally needs `brew install libmtp`.
+
+For a double-clickable app, run `./build-macos.sh`; it writes `dist/GR-Studio.app` (unsigned, so it runs on this Mac but would be blocked by Gatekeeper on another one until signed or notarized). The app still uses Homebrew's libmtp for USB import.
+
 ## Archive workspace
 
 Archive uses a monochrome palette matched to the local Chrome City / Monochrome Linux scheme: charcoal surfaces, silver actions, and neutral selection outlines. File, Edit, and View menus use native Qt controls. Light, Color, Effects, Detail, Curve, and Mixer sections expand independently, as do Frame Layout/Paper and Upright/Manual; export stays available below the scrolling inspector. The histogram shows **source luminance**, sampled at no more than 256 × 256 pixels. It does not include edits or the paper frame. Vertical guides are solid white and horizontal guides are dashed white, both outlined against the photograph. No runtime dependencies were added.
@@ -23,7 +29,7 @@ Select multiple photos with Ctrl-click (Command-click on Mac), Shift-click for a
 
 Edits persist automatically outside the originals, including each photo’s curve and all mixer bands. Older sessions open with neutral defaults for the added controls. Reset photo returns the previewed photo to the source. Removing from the session only removes the workspace entry. Camera operations in the shipped importer are read-only.
 
-On KDE Linux, the export picker includes your saved network places (including **NAS**). Click **NAS**, open a share, and choose an export folder. GR Studio uses the installed KIO Fuse service and desktop authentication, remembers the network URL, and reconnects on the next export. If connection fails, open the NAS in Dolphin and sign in before retrying. On macOS, mount the NAS in Finder and choose its folder under `/Volumes`. No network credentials are stored by GR Studio.
+On KDE Linux, the export picker includes your saved network places (including **NAS**). Click **NAS**, open a share, and choose an export folder. GR Studio uses the installed KIO Fuse service and desktop authentication, remembers the network URL, and reconnects on the next export. If connection fails, open the NAS in Dolphin and sign in before retrying. On macOS, connect to the NAS in Finder first (Go → Connect to Server…); its shares then appear in the export picker's sidebar under `/Volumes`. A folder chosen on a share is remembered by its network address, and on a later export GR Studio asks Finder to reconnect the share if it is not mounted (Finder shows its own sign-in window when the Keychain has no saved login). No network credentials are stored by GR Studio.
 
 Shortcuts: Ctrl+O opens local photos; Ctrl+I opens USB import; Ctrl+E exports.
 
@@ -53,7 +59,7 @@ Open **Straighten**, choose **Vertical**, then **Apply** for automatic vertical 
 - Polaroid Square uses a centered crop; Fit canvas adds space around the whole photo. Border width, bottom margin, and corner radius are percentages of the photo’s shorter side. Background color and blur are calculated independently for each photo during batch processing. Very large combinations above 160 megapixels are rejected before allocating the canvas. Freeform crop, textured paper, wireless transfer, and undo history are not part of this first version.
 - Linux tested with the connected GR IV. SD listing, thumbnails, and original download are verified. Both storage IDs are exposed, but no internal-memory photos were available for transfer testing.
 - The USB adapter currently accepts exactly one GR IV with USB ID 25fb:2123. Disconnect other MTP devices before importing.
-- macOS source support is prepared but **not yet tested or packaged**. Linux binaries do not run on macOS.
+- macOS: runs from source and packages as `dist/GR-Studio.app` (verified 1 November 2026 on macOS 27.2, Apple silicon, Python 3.14; all 200 tests pass). USB import on macOS has **not yet been tried with the camera attached** — the no-camera path works. Linux binaries do not run on macOS.
 
 ## Lightweight behavior
 
@@ -72,16 +78,17 @@ sudo pacman -S libmtp
 ./run.sh
 ```
 
-macOS preparation on the Mac:
+macOS (done on the Mac Studio, 1 November 2026):
 
 ```sh
 brew install python@3.14 libmtp
-python3.14 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m gr_studio
+./run.sh            # creates .venv with python3.14 and installs requirements.txt
+./build-macos.sh    # optional: dist/GR-Studio.app
 ```
 
-Create a fresh virtual environment on each OS; do not copy the Linux `.venv` to the Mac. macOS camera permissions/device behavior still need verification. Apple Photos or Image Capture may hold the camera; quit them if the importer reports that it cannot open the device.
+Create a fresh virtual environment on each OS; do not copy the Linux `.venv` to the Mac. macOS camera permissions/device behavior still need verification with the GR IV attached. Apple Photos or Image Capture may hold the camera; quit them if the importer reports that it cannot open the device.
+
+macOS-specific behavior in the source: the app font is the system UI font (there is no `sans-serif` alias on macOS, and asking for one made Qt scan every font family at startup); shortcut hints read ⌘O/⌘I; `free()` for libmtp buffers comes from `dlopen(NULL)` rather than `ctypes.util.find_library`, which on macOS loads libraries itself; and the export picker's network support uses Finder mounts instead of KIO Fuse (above).
 
 ## Development and verification
 

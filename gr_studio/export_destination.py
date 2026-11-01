@@ -1,7 +1,16 @@
-"""Browse KDE network places through its existing, authenticated KIO bridge."""
+"""Export to network folders.
+
+Linux (KDE): saved network places are mounted through the authenticated KIO
+Fuse bridge. macOS: volumes mounted in Finder appear under /Volumes; a
+remembered network URL is re-mounted through Finder ("open smb://…") when the
+volume is not currently mounted.
+"""
 from pathlib import Path
+import re
 import shutil
 import subprocess
+import sys
+import time
 import xml.etree.ElementTree as ET
 from urllib.parse import quote, urlsplit, unquote
 
@@ -9,6 +18,14 @@ from PySide6.QtCore import QThreadPool, QUrl
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QLabel, QPushButton, QWidget
 
 from .workers import Job
+
+PLATFORM = sys.platform
+NETWORK_SCHEMES = {'smb', 'sftp', 'nfs'}
+MOUNT_WAIT = 60      # seconds to wait for Finder to finish mounting
+MOUNT_POLL = 1.0     # seconds between checks while waiting
+# macOS `mount` lines: "//user@host/share on /Volumes/share (smbfs, nodev, …)"
+# or "host:/export on /Volumes/export (nfs, nodev, …)".
+_MOUNT_LINE = re.compile(r'^(?P<source>.+?) on (?P<point>/.+?) \((?P<kind>smbfs|nfs)[,)]')
 
 
 def network_places(path=None):
@@ -19,7 +36,82 @@ def network_places(path=None):
         return []
     return [(entry.findtext('title') or 'Network', entry.get('href'))
             for entry in root.findall('bookmark')
-            if urlsplit(entry.get('href', '')).scheme in {'smb', 'sftp', 'nfs'}]
+            if urlsplit(entry.get('href', '')).scheme in NETWORK_SCHEMES]
+
+
+def mounted_volumes(output=None):
+    """macOS: {mount point: network URL} for SMB and NFS volumes Finder has mounted."""
+    if output is None:
+        if PLATFORM != 'darwin':
+            return {}
+        try:
+            output = subprocess.run(['mount'], capture_output=True, text=True,
+                                    timeout=10, check=True).stdout
+        except (subprocess.SubprocessError, OSError):
+            return {}
+    volumes = {}
+    for line in output.splitlines():
+        match = _MOUNT_LINE.match(line)
+        if not match:
+            continue
+        source, point, kind = match.group('source', 'point', 'kind')
+        if kind == 'smbfs' and source.startswith('//'):
+            netloc, _, share = source[2:].partition('/')
+            volumes[Path(point)] = f'smb://{netloc}/{quote(unquote(share))}'
+        elif kind == 'nfs' and ':/' in source:
+            host, _, export = source.partition(':')
+            volumes[Path(point)] = f'nfs://{host}{quote(unquote(export))}'
+    return volumes
+
+
+def _parts(url):
+    parsed = urlsplit(url)
+    return parsed.scheme, (parsed.hostname or '').lower(), [unquote(s) for s in parsed.path.split('/') if s]
+
+
+def _mounted_path(destination, volumes):
+    """Local path for a network URL when one of its parents is a mounted volume."""
+    scheme, host, wanted = _parts(destination)
+    lowered = [s.lower() for s in wanted]
+    best = None
+    for point, url in volumes.items():
+        volume_scheme, volume_host, have = _parts(url)
+        if (volume_scheme, volume_host) != (scheme, host) or len(have) > len(wanted):
+            continue
+        if [s.lower() for s in have] != lowered[:len(have)]:
+            continue
+        if best is None or len(have) > len(best[1]):
+            best = (point, have)
+    if best is None:
+        return None
+    point, have = best
+    return point.joinpath(*wanted[len(have):])
+
+
+def _resolve_macos(destination):
+    parsed = urlsplit(destination)
+    if parsed.scheme not in {'smb', 'nfs'}:
+        raise RuntimeError('Connect to this location in Finder (Go → Connect to Server…), '
+                           'then choose its folder under /Volumes.')
+    path = _mounted_path(destination, mounted_volumes())
+    if path is None:
+        scheme, _, segments = _parts(destination)
+        share = segments[:1] if scheme == 'smb' else segments
+        url = f'{scheme}://{parsed.netloc}/' + '/'.join(quote(s) for s in share)
+        try:
+            # Finder mounts the share, asking for credentials when the keychain has none.
+            subprocess.run(['open', url], capture_output=True, timeout=30, check=True)
+        except (subprocess.SubprocessError, OSError) as exc:
+            raise RuntimeError('Finder could not connect to the NAS. Open it in Finder '
+                               '(Go → Connect to Server…) and sign in, then retry.') from exc
+        deadline = time.monotonic() + MOUNT_WAIT
+        while path is None and time.monotonic() < deadline:
+            time.sleep(MOUNT_POLL)
+            path = _mounted_path(destination, mounted_volumes())
+        if path is None:
+            raise RuntimeError('The NAS did not connect. Finish signing in through Finder, '
+                               'then retry the export.')
+    return path
 
 
 def resolve_destination(destination):
@@ -28,8 +120,10 @@ def resolve_destination(destination):
         return Path(destination).expanduser()
     if parsed.scheme == 'file':
         return Path(unquote(parsed.path))
-    if parsed.scheme not in {'smb', 'sftp', 'nfs'}:
+    if parsed.scheme not in NETWORK_SCHEMES:
         raise ValueError('Choose a local folder or an SMB, SFTP or NFS folder.')
+    if PLATFORM == 'darwin':
+        return _resolve_macos(str(destination))
     command = shutil.which('qdbus6') or shutil.which('qdbus')
     if not command:
         raise RuntimeError('Mount the NAS in your file manager first, then choose its local folder.')
@@ -56,7 +150,9 @@ class ExportFolderDialog(QFileDialog):
         self.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         self.setLabelText(QFileDialog.DialogLabel.Accept, 'Choose')
         self.setMinimumSize(720, 500)
-        self.mounts = {}
+        # Volumes already mounted in Finder count as network places, so a folder
+        # chosen under /Volumes is remembered by its network URL and re-mounted later.
+        self.mounts = dict(mounted_volumes()) if PLATFORM == 'darwin' else {}
         self.jobs = set()
         self.pool = QThreadPool(self)
         self.pool.setMaxThreadCount(1)
@@ -74,7 +170,14 @@ class ExportFolderDialog(QFileDialog):
         layout.addWidget(self.notice, 1)
         grid = self.layout()
         grid.addWidget(row, grid.rowCount(), 0, 1, grid.columnCount())
-        if urlsplit(destination).scheme in {'smb', 'sftp', 'nfs'}:
+        if PLATFORM == 'darwin':
+            if self.mounts:
+                self.setSidebarUrls(self.sidebarUrls()
+                                    + [QUrl.fromLocalFile(str(path)) for path in self.mounts])
+            else:
+                self.notice.setText('To export to the NAS, connect to it in Finder first. '
+                                    'It then appears here under /Volumes.')
+        if urlsplit(destination).scheme in NETWORK_SCHEMES:
             self.connect_place(destination)
         else:
             self.setDirectory(destination)
